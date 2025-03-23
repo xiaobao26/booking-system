@@ -26,7 +26,7 @@ public class ApplicationDbContext: DbContext
          e.ToTable("User");
          e.HasKey(u => u.Id);
          e.Property(u => u.Email).IsRequired().HasMaxLength(255);
-         e.Property(u => u.Password).IsRequired().HasMaxLength(255);
+         e.Property(u => u.Password).IsRequired().HasMaxLength(128);
 
          e.HasIndex(u => u.Email).IsUnique();
       });

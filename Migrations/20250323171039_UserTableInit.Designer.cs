@@ -12,7 +12,7 @@ using booking_system.Data;
 namespace booking_system.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250323163925_UserTableInit")]
+    [Migration("20250323171039_UserTableInit")]
     partial class UserTableInit
     {
         /// <inheritdoc />
@@ -38,8 +38,8 @@ namespace booking_system.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.HasKey("Id");
 

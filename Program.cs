@@ -1,18 +1,35 @@
 using booking_system.Data;
+using booking_system.Mappings;
+using booking_system.Repositories;
+using booking_system.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region Connection Database
-
-var connectionString = builder.Configuration["DBConnection"];
 builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
-    option.UseNpgsql(connectionString);
+    option.UseNpgsql(builder.Configuration["DBConnection"]);
 });
-
-
 #endregion
+
+#region AutoMapper dependency injection
+builder.Services.AddAutoMapper(typeof(UserProfile));
+#endregion
+
+#region Service dependency injection
+builder.Services.AddScoped<IUserService, UserService>();
+#endregion
+
+#region Repository
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+#endregion
+
+
+
+
+builder.Services.AddControllers();
+
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -29,6 +46,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapControllers();
 
 app.Run();
 
