@@ -1,4 +1,5 @@
 using booking_system.Data;
+using booking_system.Filters;
 using booking_system.Mappings;
 using booking_system.Repositories;
 using booking_system.Services;
@@ -29,7 +30,6 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 
 builder.Services.AddControllers();
-
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

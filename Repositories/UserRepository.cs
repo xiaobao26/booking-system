@@ -1,4 +1,5 @@
 using booking_system.Data;
+using booking_system.Dtos;
 using booking_system.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,43 +14,30 @@ public class UserRepository: IUserRepository
         _dbContext = dbContext;
     }
 
-    private async Task<User?> FindUserById(Guid userId)
+    public async Task<User?> FindUserByIdAsync(Guid userId)
     {
         return await _dbContext.Users.FindAsync(userId);
     }
 
-    private async Task<bool> FindUserByEmail(string userEmail)
+    public async Task<bool> UserExistByEmail(string userEmail)
     {
         return await _dbContext.Users.AnyAsync(u => u.Email == userEmail);
     }
 
-    public async Task AddUser(User user)
+    public void AddUser(User newUser)
     {
-        var isUserExist = await FindUserByEmail(user.Email);
-        if (isUserExist) throw new Exception("User already exist");
-        
-        _dbContext.Users.Add(user);
+        _dbContext.Users.Add(newUser);
     }
     
-    public async Task DeleteUserAsync(Guid userId)
+    public void DeleteUser(User targetUser)
     {
-        var targetUser = await FindUserById(userId);
-        if (targetUser == null) throw new Exception("User cannot found");
         _dbContext.Users.Remove(targetUser);
     }
     
-    public async Task UpdateUserAsync(Guid userId, User newUserInfo)
+    public void UpdateUser(User targetUser, UserUpdateDto newUserInfo)
     {
-        var targetUser = await FindUserById(userId);
-        if (targetUser == null) throw new Exception("User cannot found");
-
         targetUser.Email = newUserInfo.Email;
         targetUser.Password = newUserInfo.Password;
-    }
-    
-    public async Task<User?> GetUserByIdAsync(Guid userId)
-    {
-        return await FindUserById(userId);
     }
     
     public async Task<List<User>> GetAllUsersAsync()

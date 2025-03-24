@@ -1,4 +1,5 @@
 using AutoMapper;
+using booking_system.Contracts;
 using booking_system.Data;
 using booking_system.Dtos;
 using booking_system.Models;
@@ -20,23 +21,43 @@ public class UserService: IUserService
     public async Task<UserResponseDto> CreateUserAsync(UserCreateDto input)
     {
         var user = _mapper.Map<User>(input);
-        await _userRepository.AddUser(user);
+        _userRepository.AddUser(user);
         await _userRepository.SaveChangesAsync();
 
         return _mapper.Map<UserResponseDto>(user);
     }
 
-    // public async Task<bool> DeleteUserAsync(Guid userId)
-    // {
-    //     
-    // }
-    // public async Task<UserUpdateDto> UpdateUserAsync(UserUpdateDto input)
-    // {
-    //     
-    // }
-    //
-    // public async Task<List<UserResponseDto>> GetAllUsersAsync()
-    // {
-    //     
-    // }
+    public async Task DeleteUserAsync(Guid userId)
+    {
+        var targetUser = await _userRepository.FindUserByIdAsync(userId);
+        if (targetUser == null) throw new NotFoundException("User cannot found");
+        
+        _userRepository.DeleteUser(targetUser);
+        await _userRepository.SaveChangesAsync();
+        
+    }
+    public async Task<UserResponseDto> UpdateUserAsync(Guid userId, UserUpdateDto input)
+    {
+        var targetUser = await _userRepository.FindUserByIdAsync(userId);
+        if (targetUser == null) throw new NotFoundException("User cannot found");
+        
+        _userRepository.UpdateUser(targetUser, input);
+        await _userRepository.SaveChangesAsync();
+
+        return _mapper.Map<UserResponseDto>(targetUser);
+    }
+
+    public async Task<UserResponseDto> GetUserByIdAsync(Guid userId)
+    {
+        var targetUser = await _userRepository.FindUserByIdAsync(userId);
+        if (targetUser == null) throw new NotFoundException("User cannot found");
+        
+        return _mapper.Map<UserResponseDto>(targetUser);
+    }
+    
+    public async Task<List<UserResponseDto>> GetAllUsersAsync()
+    {
+        var allUsers = await _userRepository.GetAllUsersAsync();
+        return _mapper.Map<List<UserResponseDto>>(allUsers);
+    }
 }
