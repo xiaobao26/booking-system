@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using booking_system.Models;
@@ -20,26 +21,30 @@ public class JwtService: IJwtService
     public string GenerateJwtToken(User user)
     {
         var secretKey = _configuration["JWTConfigure:SecretKey"];
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim("email_verified", user.EmailVerified.ToString()),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+        var claimIdentity = new ClaimsIdentity(claims);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(
-            [
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            ]),
+            Subject = claimIdentity,
             Expires = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("JWTConfigure:ExpirationInMinutes")),
-            SigningCredentials = creds,
+            SigningCredentials = credentials,
             Issuer = _configuration["JWTConfigure:Issuer"],
             Audience = _configuration["JWTConfigure:Audience"]
         };
 
-        var handler = new JsonWebTokenHandler();
-        string token = handler.CreateToken(tokenDescriptor);
-
-        return token;
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.CreateToken(tokenDescriptor);
+        
+        return handler.WriteToken(token);
     }
 }

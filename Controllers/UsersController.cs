@@ -1,6 +1,7 @@
 using booking_system.Contracts;
 using booking_system.Dtos;
 using booking_system.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace booking_system.Controllers;
@@ -19,6 +20,7 @@ public class UsersController: ControllerBase
         _logger = logger;
     }
     
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<UserResponseDto>> CreateUserAsync(UserCreateDto input)
     {
