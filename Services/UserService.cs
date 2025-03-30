@@ -55,6 +55,14 @@ public class UserService: IUserService
         return _mapper.Map<UserResponseDto>(targetUser);
     }
     
+    public async Task<UserResponseDto> GetUserByEmailAsync(string email)
+    {
+        var targetUser = await _userRepository.FindUserByEmailAsync(email);
+        if (targetUser == null) throw new NotFoundException("User cannot found");
+
+        return _mapper.Map<UserResponseDto>(targetUser);
+    }
+    
     public async Task<List<UserResponseDto>> GetAllUsersAsync()
     {
         var allUsers = await _userRepository.GetAllUsersAsync();

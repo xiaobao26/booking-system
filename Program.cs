@@ -1,9 +1,12 @@
+using System.Text;
 using booking_system.Data;
-using booking_system.Filters;
+using booking_system.Infrastructure.Authentication;
 using booking_system.Mappings;
 using booking_system.Repositories;
 using booking_system.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,10 +23,31 @@ builder.Services.AddAutoMapper(typeof(UserProfile));
 
 #region Service dependency injection
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<IJwtService, JwtService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 #endregion
 
 #region Repository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+#endregion
+
+#region JWT Configuration
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JWTConfigure:Issuer"],
+            ValidAudience = builder.Configuration["JWTConfigure:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTConfigure:SecretKey"]))
+        };
+    });
+
+builder.Services.AddAuthorization();
 #endregion
 
 
@@ -37,6 +61,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

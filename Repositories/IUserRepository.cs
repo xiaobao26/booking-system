@@ -6,6 +6,7 @@ namespace booking_system.Repositories;
 public interface IUserRepository
 {
     Task<User?> FindUserByIdAsync(Guid userId);
+    Task<User?> FindUserByEmailAsync(string email);
     Task<bool> UserExistByEmail(string userEmail);
     void AddUser(User newUser);
     void DeleteUser(User targetUser);
