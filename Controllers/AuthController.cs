@@ -20,4 +20,11 @@ public class AuthController: ControllerBase
         var token = await _authService.Login(email, password);
         return Ok(token);
     }
+
+    [HttpPost("login-with-refreshtoken")]
+    public async Task<IActionResult> LoginWithRefreshToken(string refreshToken)
+    {
+        var result = await _authService.LoginWithRefreshToken(refreshToken);
+        return Ok(result);
+    }
 }

@@ -4,5 +4,6 @@ namespace booking_system.Services;
 
 public interface IAuthService
 {
-    Task<string> Login(string email, string password);
+    Task<object> Login(string email, string password);
+    Task<object> LoginWithRefreshToken(string token);
 }

@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using booking_system.Models;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -20,10 +21,7 @@ public class JwtService: IJwtService
 
     public string GenerateJwtToken(User user)
     {
-        var secretKey = _configuration["JWTConfigure:SecretKey"];
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
+        // payload
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -31,20 +29,32 @@ public class JwtService: IJwtService
             new Claim("email_verified", user.EmailVerified.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
-        var claimIdentity = new ClaimsIdentity(claims);
+        var identity = new ClaimsIdentity(claims);
+        
+        // signature
+        var secretKey = _configuration["JWTConfigure:SecretKey"];
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = claimIdentity,
-            Expires = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("JWTConfigure:ExpirationInMinutes")),
-            SigningCredentials = credentials,
+            // payload
+            Subject = identity,
             Issuer = _configuration["JWTConfigure:Issuer"],
-            Audience = _configuration["JWTConfigure:Audience"]
+            Audience = _configuration["JWTConfigure:Audience"],
+            Expires = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("JWTConfigure:ExpirationInMinutes")),
+            // signature
+            SigningCredentials = credentials, 
         };
 
         var handler = new JwtSecurityTokenHandler();
         var token = handler.CreateToken(tokenDescriptor);
         
         return handler.WriteToken(token);
+    }
+
+    public string GenerateRefreshToken()
+    {
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     }
 }

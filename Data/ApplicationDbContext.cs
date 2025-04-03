@@ -11,12 +11,14 @@ public class ApplicationDbContext: DbContext
    }
    
    public virtual DbSet<User> Users { get; set; }
+   public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
    protected override void OnModelCreating(ModelBuilder modelBuiler)
    {
       base.OnModelCreating(modelBuiler);
 
       ConfigureUserEntity(modelBuiler);
+      ConfigureRefreshToken(modelBuiler);
    }
 
    private void ConfigureUserEntity(ModelBuilder modelBuilder)
@@ -30,6 +32,21 @@ public class ApplicationDbContext: DbContext
          e.Property(u => u.EmailVerified).HasDefaultValue(false);
          
          e.HasIndex(u => u.Email).IsUnique();
+      });
+   }
+
+   private void ConfigureRefreshToken(ModelBuilder modelBuilder)
+   {
+      modelBuilder.Entity<RefreshToken>(e =>
+      {
+         e.ToTable("RefreshToken");
+         e.HasKey(r => r.Id);
+         e.Property(r => r.Token).HasMaxLength(200);
+
+         e.HasIndex(r => r.Token).IsUnique();
+         e.HasOne<User>(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId);
       });
    }
 }
